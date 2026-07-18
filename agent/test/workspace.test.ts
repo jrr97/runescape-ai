@@ -10,13 +10,13 @@ const root = resolve(import.meta.dirname, "..");
 
 test("workspace validation resolves component calls into a stable bundle", async () => {
   const workspace = await loadWorkspace(root);
-  const entry = workspace.get("training.attack-to-level");
+  const entry = workspace.get("examples.attack-to-level");
   assert.ok(entry);
   const parameters = { targetLevel: 50, npcName: "Flesh Crawler", foodName: "Lobster" };
   const first = buildBundle(entry, workspace, parameters);
   const second = buildBundle(entry, workspace, parameters);
 
-  assert.deepEqual(Object.keys(first.definitions).sort(), ["survival.eat-if-needed", "training.attack-to-level"]);
+  assert.deepEqual(Object.keys(first.definitions).sort(), ["examples.attack-to-level", "survival.eat-if-needed"]);
   assert.equal(first.digest, second.digest);
   assert.deepEqual(first.parameters, { ...parameters, eatBelow: 12 });
   assert.deepEqual(first.compatibility.requiredOperations, ["find_inventory", "find_nearest", "interact_inventory", "interact_npc", "observe"]);

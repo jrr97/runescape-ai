@@ -13,9 +13,11 @@ runtime/data/
 
 # Agent routines (local / session-specific)
 agent/routines/*
+!agent/routines/examples/
 !agent/routines/tmp/
 agent/routines/tmp/*
 !agent/routines/tmp/.gitkeep
+!agent/routines/tmp/travel-waypoints.json
 
 # Java / Gradle (gateway)
 .gradle/

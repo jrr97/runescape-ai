@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "routine",
+  "id": "tmp.travel-waypoints",
+  "version": "1.0.0",
+  "name": "Temporary multi-waypoint travel",
+  "description": "Travel through an ordered list of coordinates with continuous pathing (next leg starts within approach tiles of the current waypoint).",
+  "temporary": true,
+  "tags": ["temporary", "travel"],
+  "inputs": {
+    "waypoints": {
+      "type": "array",
+      "description": "Ordered coordinates [{x,y,plane?}, ...]; at least one required"
+    },
+    "tolerance": { "type": "integer", "minimum": 0, "maximum": 10, "default": 2, "required": false },
+    "approach": { "type": "integer", "minimum": 0, "maximum": 10, "default": 5, "required": false }
+  },
+  "outputs": {
+    "position": { "type": "coordinate" }
+  },
+  "entry": "travel",
+  "nodes": {
+    "travel": {
+      "type": "call",
+      "target": "movement.go-via",
+      "with": {
+        "waypoints": "$inputs.waypoints",
+        "tolerance": "$inputs.tolerance",
+        "approach": "$inputs.approach"
+      }
+    },
+    "done": { "type": "return", "with": { "position": "$nodes.travel.position" } }
+  },
+  "edges": [
+    { "from": "travel", "to": "done" }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "kind": "routine",
+  "id": "examples.attack-to-level",
+  "version": "1.0.0",
+  "name": "Example: train Attack to level",
+  "description": "Fight a named nearby NPC until the requested base Attack level, eating named food when required.",
+  "tags": ["training", "combat", "attack"],
+  "method": {
+    "skill": "attack",
+    "setup": "Equip suitable melee gear and bring food before starting.",
+    "travel": "The requested NPC must be loaded near the player.",
+    "xpPerHour": { "minimum": 6000, "maximum": 30000 },
+    "supplies": ["Melee equipment", "Food"],
+    "recovery": "Stops if food is required but missing or the NPC cannot be found after bounded retries."
+  },
+  "inputs": {
+    "targetLevel": { "type": "integer", "minimum": 2, "maximum": 99 },
+    "npcName": { "type": "string" },
+    "foodName": { "type": "string" },
+    "eatBelow": { "type": "integer", "minimum": 1, "maximum": 98, "default": 12, "required": false }
+  },
+  "outputs": {
+    "level": { "type": "integer" },
+    "experience": { "type": "integer" }
+  },
+  "entry": "observe",
+  "nodes": {
+    "observe": { "type": "action", "operation": "observe", "with": { "components": ["player", "skills", "inventory"] } },
+    "recover": {
+      "type": "call",
+      "target": "survival.eat-if-needed",
+      "with": { "foodName": "$inputs.foodName", "threshold": "$inputs.eatBelow" }
+    },
+    "find_target": {
+      "type": "action",
+      "operation": "find_nearest",
+      "with": { "query": "$inputs.npcName" },
+      "retry": { "maxAttempts": 5, "backoffMs": 750 }
+    },
+    "attack": {
+      "type": "action",
+      "operation": "interact_npc",
+      "with": {
+        "id": "$nodes.find_target.id",
+        "name": "$nodes.find_target.matched",
+        "action": "Attack",
+        "expectedRevision": "$nodes.observe.revision"
+      },
+      "retry": { "maxAttempts": 5, "backoffMs": 500 }
+    },
+    "wait_combat": { "type": "wait", "durationMs": 1200 },
+    "done": {
+      "type": "return",
+      "with": {
+        "level": "$nodes.observe.skills.attack.baseLevel",
+        "experience": "$nodes.observe.skills.attack.experience"
+      }
+    }
+  },
+  "edges": [
+    {
+      "from": "observe",
+      "to": "done",
+      "when": { "op": "gte", "left": "$nodes.observe.skills.attack.baseLevel", "right": "$inputs.targetLevel" },
+      "priority": 20
+    },
+    {
+      "from": "observe",
+      "to": "wait_combat",
+      "when": {
+        "any": [
+          { "op": "exists", "left": "$nodes.observe.player.target" },
+          { "op": "eq", "left": "$nodes.observe.player.moving", "right": true }
+        ]
+      },
+      "priority": 10
+    },
+    { "from": "observe", "to": "recover" },
+    { "from": "recover", "to": "find_target" },
+    {
+      "from": "find_target",
+      "to": "wait_combat",
+      "when": { "op": "eq", "left": "$nodes.find_target.found", "right": false },
+      "priority": 10
+    },
+    { "from": "find_target", "to": "attack" },
+    { "from": "attack", "to": "wait_combat" },
+    { "from": "wait_combat", "to": "observe" }
+  ]
+}
