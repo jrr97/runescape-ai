@@ -73,7 +73,7 @@ test("API pins, executes, monitors, and verifies a routine through one gateway s
     const current = await fetch(`${base}/v1/runs/${run.id}`, { headers: { Authorization: `Bearer ${apiToken}` } });
     run = await current.json() as RunRecord;
   }
-  assert.equal(run.status, "succeeded", run.error);
+  assert.equal(run.status, "succeeded", run.error ?? "expected succeeded");
   assert.equal((run.outputs?.state as Record<string, unknown>).ready, true);
   assert.equal(run.finalState?.revision, 2);
   assert.equal(observations, 2);
