@@ -1,0 +1,29 @@
+# Dependencies & build
+node_modules/
+dist/
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime local state
+runtime/data/
+
+# Agent routines (local / session-specific)
+agent/routines/*
+!agent/routines/tmp/
+agent/routines/tmp/*
+!agent/routines/tmp/.gitkeep
+
+# Java / Gradle (gateway)
+.gradle/
+**/build/
+!**/src/**/build/
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
+.codex/

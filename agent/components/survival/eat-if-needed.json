@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "kind": "component",
+  "id": "survival.eat-if-needed",
+  "version": "1.0.0",
+  "name": "Eat if needed",
+  "description": "Eat a named inventory item below a hitpoints threshold; fail clearly when food is required but absent.",
+  "tags": ["combat", "food", "recovery"],
+  "inputs": {
+    "foodName": { "type": "string", "description": "Exact inventory item name" },
+    "threshold": { "type": "integer", "minimum": 1, "maximum": 98 }
+  },
+  "outputs": {
+    "eaten": { "type": "boolean" }
+  },
+  "entry": "observe",
+  "nodes": {
+    "observe": { "type": "action", "operation": "observe", "with": { "components": ["skills", "inventory"] } },
+    "find_food": { "type": "action", "operation": "find_inventory", "with": { "name": "$inputs.foodName" } },
+    "eat": {
+      "type": "action",
+      "operation": "interact_inventory",
+      "with": {
+        "index": "$nodes.find_food.index",
+        "id": "$nodes.find_food.id",
+        "action": "Eat",
+        "expectedRevision": "$nodes.observe.revision"
+      },
+      "retry": { "maxAttempts": 2, "backoffMs": 250 }
+    },
+    "not_needed": { "type": "return", "with": { "eaten": false } },
+    "did_eat": { "type": "return", "with": { "eaten": true } },
+    "no_food": { "type": "fail", "message": "Hitpoints are low and the requested food is unavailable" }
+  },
+  "edges": [
+    {
+      "from": "observe",
+      "to": "not_needed",
+      "when": { "op": "gt", "left": "$nodes.observe.skills.hitpoints.currentLevel", "right": "$inputs.threshold" },
+      "priority": 10
+    },
+    { "from": "observe", "to": "find_food" },
+    {
+      "from": "find_food",
+      "to": "eat",
+      "when": {
+        "all": [
+          { "op": "eq", "left": "$nodes.find_food.found", "right": true },
+          { "op": "exists", "left": "$nodes.find_food.index" }
+        ]
+      },
+      "priority": 10
+    },
+    { "from": "find_food", "to": "no_food" },
+    { "from": "eat", "to": "did_eat" }
+  ]
+}
+

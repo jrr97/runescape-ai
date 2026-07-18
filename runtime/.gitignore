@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+data/
+*.log
+.gradle/
+gateway/build/
+

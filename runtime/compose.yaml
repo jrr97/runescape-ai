@@ -1,0 +1,15 @@
+services:
+  runtime:
+    build: .
+    init: true
+    ports:
+      - "${RUNESCAPE_PORT:-4310}:4310"
+    environment:
+      RUNESCAPE_PORT: 4310
+      RUNESCAPE_DATA_DIR: /data
+      RUNESCAPE_API_TOKEN: ${RUNESCAPE_API_TOKEN}
+      RUNESCAPE_GATEWAY_TOKEN: ${RUNESCAPE_GATEWAY_TOKEN}
+    volumes:
+      - ./src:/app/src:ro
+      - ./data:/data
+    restart: unless-stopped
