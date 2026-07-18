@@ -2,6 +2,8 @@
 
 Local OSRS control stack: agent CLI → runtime API → RuneMate gateway → RuneLite.
 
+License: [MIT](LICENSE). See [CONTRIBUTING](CONTRIBUTING.md) and [SECURITY](SECURITY.md).
+
 ```text
 agent/     JSON routines + osrs CLI
 runtime/   HTTP API, graph execution, Docker service
