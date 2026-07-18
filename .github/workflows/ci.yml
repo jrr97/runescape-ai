@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            agent/package-lock.json
+            runtime/package-lock.json
+
+      - name: Agent check & test
+        working-directory: agent
+        run: |
+          npm ci
+          npm run check
+          npm test
+
+      - name: Runtime check & test
+        working-directory: runtime
+        run: |
+          npm ci
+          npm run check
+          npm test
